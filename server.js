@@ -1,124 +1,171 @@
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
-const path = require('path');
 const cors = require('cors');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/todo_app';
+const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/todo_app';
 
-/* ─────── MongoDB Connect ─────── */
-mongoose.connect(MONGO_URI)
-  .then(() => console.log(`✅ MongoDB connected → ${MONGO_URI}`))
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  });
+/* ─── 1. Connect to MongoDB ─── */
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  process.exit(1);
+});
 
-/* ─────── Mongoose Schema ─────── */
-const taskSchema = new mongoose.Schema(
-  {
-    text: { type: String, required: true, trim: true },
-    completed: { type: Boolean, default: false },
-    deletedAt: { type: Date, default: null }
-  },
-  { timestamps: true }
-);
+/* ─── 2. Task Schema & Model ─── */
+const taskSchema = new mongoose.Schema({
+  text: { type: String, required: true },
+  attachment: { type: String, default: null },
+  completed: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  deletedAt: { type: Date, default: null }
+});
+taskSchema.index({ deletedAt: 1 });
 const Task = mongoose.model('Task', taskSchema);
 
-/* ─────── Middleware ─────── */
+/* ─── 3. Middleware ─── */
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname))); // Serves HTML/CSS/JS
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded files
 
-/* ─────── Helper ─────── */
-const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+/* ─── 4. File Upload Setup (Multer) ─── */
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-/* ─────── Routes ─────── */
-
-// CREATE
-app.post('/api/tasks/create', asyncHandler(async (req, res) => {
-  const { text } = req.body;
-  if (!text || !text.trim()) {
-    return res.status(400).json({ error: 'Task text is required' });
+const storage = multer.diskStorage({
+  destination: (_, __, cb) => cb(null, 'uploads/'),
+  filename: (_, file, cb) => {
+    const unique = Date.now() + '-' + file.originalname;
+    cb(null, unique);
   }
-  const task = await Task.create({ text: text.trim() });
-  res.status(201).json(task);
-}));
+});
+const upload = multer({ storage });
 
-// READ (with optional status filter)
-app.get('/api/tasks/view', asyncHandler(async (req, res) => {
-  const { status } = req.query;
-  const filter = { deletedAt: null };
-  if (status === 'completed') filter.completed = true;
-  else if (status === 'incomplete') filter.completed = false;
-
-  const tasks = await Task.find(filter).sort({ createdAt: -1 });
-  res.json(tasks);
-}));
-
-// MARK AS COMPLETED/INCOMPLETE (PATCH)
-app.patch('/api/tasks/status', asyncHandler(async (req, res) => {
-  const { primary, completed } = req.body;
-  if (!primary || typeof completed !== 'boolean') {
-    return res.status(400).json({ error: 'Invalid request body' });
+/* ─── 5. Helper for filters ─── */
+function buildFilter(status = 'all') {
+  switch (status) {
+    case 'completed': return { completed: true, deletedAt: null };
+    case 'incomplete': return { completed: false, deletedAt: null };
+    case 'trashed': return { deletedAt: { $ne: null } };
+    default: return { deletedAt: null };
   }
+}
 
-  const task = await Task.findByIdAndUpdate(
-    primary,
-    { completed },
-    { new: true }
-  );
+/* ─── 6. Routes ─── */
 
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+// CREATE task with optional file
+app.post('/api/tasks/create', upload.single('attachment'), async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text?.trim()) return res.status(400).json({ error: 'Task text required' });
 
-  res.json({ message: 'Task updated', task });
-}));
+    const filePath = req.file ? req.file.path.replace(/\\/g, '/') : null;
+    const task = await Task.create({ text: text.trim(), attachment: filePath });
 
-// UPDATE TEXT
-app.put('/api/tasks/:id', asyncHandler(async (req, res) => {
-  const { text } = req.body;
-  if (!text || !text.trim()) {
-    return res.status(400).json({ error: 'Task text is required' });
+    res.status(201).json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+});
 
-  const task = await Task.findByIdAndUpdate(
-    req.params.id,
-    { text: text.trim() },
-    { new: true }
-  );
+// VIEW tasks
+app.get('/api/tasks/view', async (req, res) => {
+  try {
+    const filter = buildFilter(req.query.status);
+    const tasks = await Task.find(filter).sort({ createdAt: -1 });
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+// TOGGLE complete
+app.patch('/api/tasks/status', async (req, res) => {
+  try {
+    const { primary: id, completed } = req.body;
+    const task = await Task.findOneAndUpdate({ _id: id, deletedAt: null }, { completed }, { new: true });
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  res.json({ message: 'Task text updated', task });
-}));
+// EDIT text
+app.put('/api/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, deletedAt: null },
+      { text: req.body.text?.trim() },
+      { new: true, runValidators: true }
+    );
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // SOFT DELETE
-app.delete('/api/tasks/delete/:id', asyncHandler(async (req, res) => {
-  const task = await Task.findByIdAndUpdate(
-    req.params.id,
-    { deletedAt: new Date() },
-    { new: true }
-  );
+app.delete('/api/tasks/delete/:id', async (req, res) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, deletedAt: null },
+      { deletedAt: new Date() },
+      { new: true }
+    );
+    if (!task) return res.status(404).json({ error: 'Task not found or already trashed' });
+    res.json({ message: 'Moved to trash', task });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  if (!task) return res.status(404).json({ error: 'Task not found' });
+// RESTORE
+app.patch('/api/tasks/restore/:id', async (req, res) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, deletedAt: { $ne: null } },
+      { deletedAt: null },
+      { new: true }
+    );
+    if (!task) return res.status(404).json({ error: 'Task not found in trash' });
+    res.json({ message: 'Task restored', task });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-  res.json({ message: 'Task soft-deleted', deletedAt: task.deletedAt });
-}));
+// PERMANENT DELETE
+app.delete('/api/tasks/permanent-delete/:id', async (req, res) => {
+  try {
+    const result = await Task.deleteOne({ _id: req.params.id, deletedAt: { $ne: null } });
+    if (result.deletedCount === 0)
+      return res.status(404).json({ error: 'Task not found or not trashed' });
+    res.json({ message: 'Task permanently deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-// Serve frontend
-app.get('/', (_req, res) => {
+/* ─── 7. Serve index.html ─── */
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-/* ─────── Global Error Handler ─────── */
-app.use((err, _req, res, _next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
+/* ─── 8. 404 Catch-All ─── */
+app.use((_, res) => res.status(404).json({ error: 'Route not found' }));
 
-/* ─────── Start Server ─────── */
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+/* ─── 9. Start Server ─── */
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

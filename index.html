@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Todo List – CRUD</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- INLINE FIXES:
+       1. removed stray </style>
+       2. ensured dark‑mode styles exist
+       3. positioned loader centred below the container            -->
+  <style>
+    /* DARK MODE --------------------------------------------------*/
+    body.dark {
+      background:#1e1e1e;
+      color:#fff;
+    }
+    body.dark .container{
+      background:#2b2b2b;
+    }
+
+    /* LOADER -----------------------------------------------------*/
+    body.loading .pl{display:block;}
+    .pl{
+      display:none;
+      position:fixed;
+      left:50%;
+      top:400px;
+      bottom:100px;        /* under the todo container           */
+      transform:translateX(-50%);
+      z-index:9999;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Todo List</h1>
+
+    <!-- CREATE -->
+    <form id="taskForm">
+      <input id="taskInput" type="text" placeholder="New task" required />
+      <button type="submit">Add</button>
+    </form>
+
+    <!-- FILTER & THEME -->
+    <div class="filters">
+      <select id="filter">
+        <option value="all">All</option>
+        <option value="completed">Completed</option>
+        <option value="incomplete">Incomplete</option>
+      </select>
+      <button id="completedBtn">✔️ Completed</button>
+
+      <!-- theme switch -->
+      <label class="ui-switch">
+        <input type="checkbox">
+        <div class="slider"><div class="circle"></div></div>
+      </label>
+    </div>
+
+    <!-- TASK LIST -->
+    <ul id="taskList"></ul>
+  </div>
+
+  <!-- LOADER (centered beneath container) ------------------------>
+  <svg class="pl" viewBox="0 0 160 160" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
+   <!-- From Uiverse.io by Nawsome --> 
+			<defs>
+				<linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+					<stop offset="0%" stop-color="#000"></stop>
+					<stop offset="100%" stop-color="#fff"></stop>
+				</linearGradient>
+				<mask id="mask1">
+					<rect x="0" y="0" width="160" height="160" fill="url(#grad)"></rect>
+				</mask>
+				<mask id="mask2">
+					<rect x="28" y="28" width="104" height="104" fill="url(#grad)"></rect>
+				</mask>
+			</defs>
+			
+			<g>
+				<g class="pl__ring-rotate">
+					<circle class="pl__ring-stroke" cx="80" cy="80" r="72" fill="none" stroke="hsl(223,90%,55%)" stroke-width="16" stroke-dasharray="452.39 452.39" stroke-dashoffset="452" stroke-linecap="round" transform="rotate(-45,80,80)"></circle>
+				</g>
+			</g>
+			<g mask="url(#mask1)">
+				<g class="pl__ring-rotate">
+					<circle class="pl__ring-stroke" cx="80" cy="80" r="72" fill="none" stroke="hsl(193,90%,55%)" stroke-width="16" stroke-dasharray="452.39 452.39" stroke-dashoffset="452" stroke-linecap="round" transform="rotate(-45,80,80)"></circle>
+				</g>
+			</g>
+			
+			<g>
+				<g stroke-width="4" stroke-dasharray="12 12" stroke-dashoffset="12" stroke-linecap="round" transform="translate(80,80)">
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(-135,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(-90,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(-45,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(0,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(45,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(90,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(135,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(180,0,0) translate(0,40)"></polyline>
+				</g>
+			</g>
+			<g mask="url(#mask1)">
+				<g stroke-width="4" stroke-dasharray="12 12" stroke-dashoffset="12" stroke-linecap="round" transform="translate(80,80)">
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(-135,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(-90,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(-45,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(0,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(45,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(90,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(135,0,0) translate(0,40)"></polyline>
+					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(180,0,0) translate(0,40)"></polyline>
+				</g>
+			</g>
+			
+			<g>
+				<g transform="translate(64,28)">
+					<g class="pl__arrows" transform="rotate(45,16,52)">
+						<path fill="hsl(3,90%,55%)" d="M17.998,1.506l13.892,43.594c.455,1.426-.56,2.899-1.998,2.899H2.108c-1.437,0-2.452-1.473-1.998-2.899L14.002,1.506c.64-2.008,3.356-2.008,3.996,0Z"></path>
+						<path fill="hsl(223,10%,90%)" d="M14.009,102.499L.109,58.889c-.453-1.421,.559-2.889,1.991-2.889H29.899c1.433,0,2.444,1.468,1.991,2.889l-13.899,43.61c-.638,2.001-3.345,2.001-3.983,0Z"></path>
+					</g>
+				</g>
+			</g>
+			<g mask="url(#mask2)">
+				<g transform="translate(64,28)">
+					<g class="pl__arrows" transform="rotate(45,16,52)">
+						<path fill="hsl(333,90%,55%)" d="M17.998,1.506l13.892,43.594c.455,1.426-.56,2.899-1.998,2.899H2.108c-1.437,0-2.452-1.473-1.998-2.899L14.002,1.506c.64-2.008,3.356-2.008,3.996,0Z"></path>
+						<path fill="hsl(223,90%,80%)" d="M14.009,102.499L.109,58.889c-.453-1.421,.559-2.889,1.991-2.889H29.899c1.433,0,2.444,1.468,1.991,2.889l-13.899,43.61c-.638,2.001-3.345,2.001-3.983,0Z"></path>
+					</g>
+				</g>
+			</g>
+		</svg>
+  </svg>
+
+  <script>
+    /* JS unchanged except dark‑mode toggle & loader already work */
+    const API='/api/tasks';
+    const $=(s,c=document)=>c.querySelector(s);
+    const form=$('#taskForm'),input=$('#taskInput'),list=$('#taskList'),
+          filter=$('#filter'),completedBtn=$('#completedBtn');
+    let currentFilter='all';
+
+    const fetchJSON=(u,o={})=>fetch(u,{headers:{'Content-Type':'application/json'},...o}).then(r=>r.json());
+
+    async function loadTasks(){
+      document.body.classList.add('loading');
+      const tasks=await fetchJSON(`${API}/view?status=${currentFilter}`);
+      renderList(tasks);
+      document.body.classList.remove('loading');
+    }
+
+    function renderList(tasks){
+      list.innerHTML='';
+      if(!tasks.length){list.innerHTML='<li class="empty">No tasks found</li>';return;}
+      tasks.forEach(renderTask);
+    }
+
+    function renderTask(t){
+      const li=document.createElement('li');
+      li.className=`task ${t.completed?'completed':''}`;
+
+      const content=document.createElement('div');content.className='task-content';
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=t.completed;
+      cb.onclick=()=>toggleComplete(t);
+      const txt=document.createElement('span');txt.textContent=t.text;
+      const dt=document.createElement('small');dt.textContent=`Created: ${new Date(t.createdAt).toLocaleString()}`;
+      content.append(cb,txt,dt);
+
+      const actions=document.createElement('div');actions.className='actions';
+      actions.append(icon('✏',()=>editTask(li,t)),icon('🗑',()=>deleteTask(t),'delete'));
+      li.append(content,actions);list.appendChild(li);
+    }
+
+    const icon=(txt,fn,cls='')=>{const b=document.createElement('button');b.className=`icon ${cls}`;b.textContent=txt;b.onclick=fn;return b;};
+
+    form.onsubmit=async e=>{
+      e.preventDefault();
+      const txt=input.value.trim();if(!txt)return;
+      await fetchJSON(`${API}/create`,{method:'POST',body:JSON.stringify({text:txt})});
+      input.value='';loadTasks();
+    };
+
+    async function toggleComplete(t){await fetchJSON(`${API}/status`,{method:'PATCH',body:JSON.stringify({primary:t._id,completed:!t.completed})});loadTasks();}
+
+    function editTask(li,t){
+      if(li.classList.contains('editing'))return;li.classList.add('editing');
+      const content=li.querySelector('.task-content');const old=content.querySelector('span').textContent;
+      const inp=document.createElement('input');inp.className='editField';inp.value=old;
+      const actions=li.querySelector('.actions');actions.innerHTML='';
+      actions.append(icon('💾',async()=>{const nt=inp.value.trim();if(!nt)return alert('Task text required');await fetchJSON(`${API}/${t._id}`,{method:'PUT',body:JSON.stringify({text:nt})});loadTasks();}),
+                    icon('✖',loadTasks,'cancel'));
+      content.innerHTML='';content.appendChild(inp);inp.focus();
+    }
+
+    async function deleteTask(t){if(!confirm('Are you sure?'))return;await fetchJSON(`${API}/delete/${t._id}`,{method:'DELETE'});setTimeout(loadTasks,300);}
+
+    filter.onchange=e=>{currentFilter=e.target.value;loadTasks();};
+    completedBtn.onclick=()=>{currentFilter='completed';filter.value='completed';loadTasks().then(()=>list.scrollIntoView({behavior:'smooth'}));};
+
+    /* DARK MODE TOGGLE ------------------------------------------*/
+    if(localStorage.getItem('theme')==='dark'){
+      document.body.classList.add('dark');
+      $('.ui-switch input').checked=true;
+    }
+    $('.ui-switch input').addEventListener('change',()=>{
+      const isDark=document.body.classList.toggle('dark');
+      localStorage.setItem('theme',isDark?'dark':'light');
+    });
+async function loadTasks() {
+  document.body.classList.add('loading');
+
+  // Simulate loading for at least 5 seconds
+  const delay = ms => new Promise(res => setTimeout(res, ms));
+
+  const tasksPromise = fetchJSON(`${API}/view?status=${currentFilter}`);
+  await Promise.all([tasksPromise, delay(3000)]); // Wait for both fetch & 5s
+  const tasks = await tasksPromise;
+
+  renderList(tasks);
+  document.body.classList.remove('loading');
+}
+
+    loadTasks();
+  </script>
+</body>
+</html>

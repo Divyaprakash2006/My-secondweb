@@ -1,0 +1,359 @@
+/* ================== Base Styles ================== */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  background-image: url('https://cdn.wallpapersafari.com/17/1/TBAZE1.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+ 
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Light mode overlay */
+  z-index: -1;
+  transition: background 0.3s ease;
+}
+
+/* ================== Container ================== */
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  backdrop-filter:blur(20px);
+  border-radius: 8px;
+  box-shadow: 0 0 10px #ccc;
+  transition: background-color 0.3s ease;
+}
+
+/* ================== Headers ================== */
+h1 {
+  text-align: center;
+  color: #ccc;
+  font-size: 2rem;
+}
+
+/* ================== Form & Inputs ================== */
+form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  box-shadow: #370772 20px;
+  border-radius: 4px;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #6200ee;
+  box-shadow: 0 0 5px rgba(98, 0, 238, 0.4);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  background: #6200ee;
+  box-shadow: #bb86fc 50px;
+  color: white;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #4500bb;
+}
+
+/* ================== Filters ================== */
+.filters {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+select {
+  padding: 0.4rem;
+  font-size: 1rem;
+  border-radius: 4px;
+}
+
+/* ================== Task List ================== */
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem;
+  border-bottom: 1px solid #ddd;
+  transition: background 0.2s;
+}
+
+.task:hover {
+  background: #f0f0f0;
+}
+
+.task.completed span {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.actions button {
+  background: transparent;
+  color: #444;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.actions button:hover {
+  color: #6200ee;
+}
+
+/* ================== Dark Mode ================== */
+body.dark {
+  color: #f1f1f1;
+}
+
+body.dark::before {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+body.dark .container {
+  background-color: #1e1e1e;
+}
+
+body.dark input,
+body.dark select,
+body.dark textarea {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+body.dark input::placeholder {
+  color: #ccc;
+}
+
+body.dark button {
+  background-color: #444;
+  color: #fff;
+}
+
+body.dark .task:hover {
+  background: #2a2a2a;
+}
+
+body.dark .task-content span {
+  color: #f1f1f1;
+}
+
+body.dark .actions button:hover {
+  color: #bb86fc;
+}
+
+body.dark small {
+  color: #ccc;
+}
+
+body.dark input.editField {
+  background-color: #444;
+  color: #fff;
+  border: 1px solid #666;
+}
+
+/* ================== Loader ================== */
+body.loading .pl {
+  display: block;
+}
+
+.pl {
+  display: none;
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 9.375em;
+  height: 9.375em;
+}
+
+.pl__arrows,
+.pl__ring-rotate,
+.pl__ring-stroke,
+.pl__tick {
+  animation-duration: 2s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.pl__arrows {
+  animation-name: arrows42;
+  transform: rotate(45deg);
+  transform-origin: 16px 52px;
+}
+
+.pl__ring-rotate,
+.pl__ring-stroke {
+  transform-origin: 80px 80px;
+}
+
+.pl__ring-rotate {
+  animation-name: ringRotate42;
+}
+
+.pl__ring-stroke {
+  animation-name: ringStroke42;
+  transform: rotate(-45deg);
+}
+
+.pl__tick {
+  animation-name: tick42;
+}
+
+.pl__tick:nth-child(2) { animation-delay: -1.75s; }
+.pl__tick:nth-child(3) { animation-delay: -1.5s; }
+.pl__tick:nth-child(4) { animation-delay: -1.25s; }
+.pl__tick:nth-child(5) { animation-delay: -1s; }
+.pl__tick:nth-child(6) { animation-delay: -0.75s; }
+.pl__tick:nth-child(7) { animation-delay: -0.5s; }
+.pl__tick:nth-child(8) { animation-delay: -0.25s; }
+
+@keyframes arrows42 {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(405deg); }
+}
+
+@keyframes ringRotate42 {
+  from { transform: rotate(0); }
+  to { transform: rotate(720deg); }
+}
+
+@keyframes ringStroke42 {
+  from, to {
+    stroke-dashoffset: 452;
+    transform: rotate(-45deg);
+  }
+  50% {
+    stroke-dashoffset: 169.5;
+    transform: rotate(-180deg);
+  }
+}
+
+@keyframes tick42 {
+  from, 3%, 47%, to {
+    stroke-dashoffset: -12;
+  }
+  14%, 36% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ================== Responsive Design ================== */
+@media (max-width: 500px) {
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  form {
+    flex-direction: column;
+  }
+
+  button,
+  input[type="text"],
+  select {
+    width: 100%;
+  }
+
+  .task {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .actions {
+    align-self: flex-end;
+  }
+}
+
+/* ================== UI Switch ================== */
+.ui-switch {
+  --switch-bg: rgb(135, 150, 165);
+  --switch-width: 48px;
+  --switch-height: 20px;
+  --circle-diameter: 32px;
+  --circle-bg: rgb(0, 56, 146);
+  --circle-inset: calc((var(--circle-diameter) - var(--switch-height)) / 2);
+  position: relative;
+  display: inline-block;
+  width: var(--switch-width);
+  height: var(--switch-height);
+}
+
+.ui-switch input {
+  display: none;
+}
+
+.ui-switch .slider {
+  width: var(--switch-width);
+  height: var(--switch-height);
+  background: var(--switch-bg);
+  border-radius: var(--switch-height);
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.ui-switch .circle {
+  width: var(--switch-height);
+  height: var(--switch-height);
+  background: var(--circle-bg);
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+.ui-switch input:checked + .slider .circle {
+  transform: translateX(calc(var(--switch-width) - var(--switch-height)));
+}

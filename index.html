@@ -17,6 +17,7 @@
       transform: translateX(-50%);
       z-index: 9999;
     }
+	 
     .filters {
       display: flex;
       gap: 10px;
@@ -353,6 +354,19 @@
       const isDark = document.body.classList.toggle('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
+async function loadTasks() {
+  document.body.classList.add('loading');
+
+  const delay = ms => new Promise(res => setTimeout(res, ms));
+  const tasksPromise = fetch(`${API}/view?status=${currentFilter}`).then(r => r.json());
+
+  // ⏱ Increase this delay for a longer loader animation
+  await Promise.all([tasksPromise, delay(3000)]); // 2000ms = 2 seconds
+
+  const tasks = await tasksPromise;
+  renderList(tasks);
+  document.body.classList.remove('loading');
+}
 
     loadTasks();
   </script>

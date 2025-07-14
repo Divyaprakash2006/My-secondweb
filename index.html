@@ -457,7 +457,8 @@ body.loading .loader {
       if (t.attachment) {
         const fileLink = document.createElement('div');
         fileLink.className = 'attachment';
-        fileLink.innerHTML = `<a href="/${t.attachment}" target="_blank">📎 View Attachment</a>`;
+        fileLink.innerHTML = `<a href="/api/tasks/file/${t.attachment}" target="_blank">📎 View Attachment</a>`;
+
         content.appendChild(fileLink);
       }
 

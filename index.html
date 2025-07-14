@@ -3,92 +3,231 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Todo List – CRUD with Files</title>
+  <title>Todo Flow – Modern CRUD with Files</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    body.dark { background: #1e1e1e; color: #fff; }
-    body.dark .container { background: #2b2b2b; }
-    body.loading .pl { display: block; }
-    .pl {
-      display: none;
-      position: fixed;
-      left: 50%;
-      top: 400px;
-      transform: translateX(-50%);
-      z-index: 9999;
+    :root {
+      --primary: #007bff;
+      --success: #28a745;
+      --danger: #dc3545;
     }
-	 
-    .filters {
-      display: flex;
-      gap: 10px;
-      margin: 1rem 0;
-      flex-wrap: wrap;
-    }
-    .filters button, .filters select {
-      padding: 0.5rem 1rem;
-      border: none;
-      background: #007bff;
-      color: #fff;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .filters button.active { background: #0056b3; }
-    .task {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.6rem;
-      background: #f2f2f2;
-      margin: 0.5rem 0;
-      border-radius: 5px;
-    }
-    body.dark .task { background: #3a3a3a; }
-    .task.completed span { text-decoration: line-through; color: gray; }
-    .task-content { display: flex; flex-direction: column; }
-    .actions button { margin-left: 5px; padding: 4px 8px; }
-    .editField { padding: 5px; font-size: 1rem; }
-    .attachment { margin-top: 5px; }
-    .attachment a { color: #007bff; text-decoration: underline; font-size: 0.9em; }
 
-    /* Responsive Form Styling */
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      box-sizing: border-box;
+      transition: background 0.3s ease, color 0.3s ease;
+      min-height: 100vh;
+    }
+
+    body {
+      background: linear-gradient(to right top, #6a11cb, #2575fc);
+      color: #222;
+    }
+
+    body.dark {
+      background: #121212;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1.2rem;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    body.dark .container {
+      background: rgba(30, 30, 30, 0.9);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.2rem;
+    }
+
     form#taskForm {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-bottom: 1rem;
     }
+
     form#taskForm input[type="text"],
     form#taskForm input[type="file"] {
       flex: 1 1 100%;
-      padding: 0.4rem;
-      font-size: 1rem;
-    }
-    form#taskForm button[type="submit"] {
-      flex: 1 1 100%;
       padding: 0.5rem;
       font-size: 1rem;
-      background: #28a745;
+    }
+
+    form#taskForm button[type="submit"] {
+      flex: 1 1 100%;
+      padding: 0.6rem;
+      background: var(--success);
       color: white;
       border: none;
       border-radius: 5px;
+      font-weight: bold;
       cursor: pointer;
     }
+
     form#taskForm button[type="submit"]:hover {
       background: #218838;
     }
 
     @media (min-width: 768px) {
-      form#taskForm input[type="text"] {
-        flex: 1 1 auto;
-        min-width: 250px;
-      }
-      form#taskForm input[type="file"] {
-        flex: 1 1 auto;
-        min-width: 180px;
-      }
-      form#taskForm button[type="submit"] {
-        flex: 0 0 auto;
-        min-width: 100px;
+      form#taskForm input[type="text"] { min-width: 250px; }
+      form#taskForm input[type="file"] { min-width: 180px; }
+      form#taskForm button[type="submit"] { min-width: 100px; }
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filters select,
+    .filters button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    .filters button.active {
+      background: #0056b3;
+    }
+
+    .task {
+      background: rgba(255,255,255,0.9);
+      padding: 0.8rem;
+      margin-bottom: 0.6rem;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    body.dark .task {
+      background: #2a2a2a;
+    }
+
+    .task-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .task.completed span {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .attachment {
+      margin-top: 4px;
+    }
+
+    .attachment a {
+      font-size: 0.9em;
+      color: var(--primary);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .actions button {
+      padding: 4px 8px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      background: var(--primary);
+      color: white;
+    }
+
+    .actions button.delete {
+      background: var(--danger);
+    }
+
+    .editField {
+      padding: 5px;
+      font-size: 1rem;
+      border-radius: 4px;
+    }
+
+    /* Loader */
+    .pl {
+      display: none;
+      position: fixed;
+      top: 400px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    body.loading .pl {
+      display: block;
+      opacity: 1;
+    }
+
+    /* Dark mode switch */
+    .ui-switch {
+      --switch-width: 48px;
+      --switch-height: 24px;
+      --circle-size: 22px;
+      position: relative;
+      width: var(--switch-width);
+      height: var(--switch-height);
+      display: inline-block;
+    }
+
+    .ui-switch input {
+      display: none;
+    }
+
+    .ui-switch .slider {
+      background: #aaa;
+      border-radius: var(--switch-height);
+      height: var(--switch-height);
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .ui-switch .circle {
+      background: white;
+      border-radius: 50%;
+      width: var(--circle-size);
+      height: var(--circle-size);
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      transition: transform 0.3s;
+    }
+
+    .ui-switch input:checked + .slider .circle {
+      transform: translateX(calc(var(--switch-width) - var(--circle-size) - 2px));
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      .filters {
+        flex-direction: column;
+        align-items: stretch;
       }
     }
   </style>
@@ -101,6 +240,7 @@
       <input type="file" id="fileInput" name="attachment" />
       <button type="submit">Add</button>
     </form>
+
     <div class="filters">
       <select id="filter">
         <option value="all">All</option>
@@ -108,84 +248,23 @@
         <option value="incomplete">Incomplete</option>
         <option value="trashed">Trash</option>
       </select>
-      <button id="completedBtn">✔️ Completed</button>
-      <label class="ui-switch" style="margin-left: auto;">
-        <input type="checkbox">
+      <button id="completedBtn">✔ Completed</button>
+      <label class="ui-switch" style="margin-left:auto;">
+        <input type="checkbox" id="themeToggle" />
         <div class="slider"><div class="circle"></div></div>
       </label>
     </div>
+
     <ul id="taskList"></ul>
   </div>
- <svg class="pl" viewBox="0 0 160 160" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
-   <!-- From Uiverse.io by Nawsome --> 
-			<defs>
-				<linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
-					<stop offset="0%" stop-color="#000"></stop>
-					<stop offset="100%" stop-color="#fff"></stop>
-				</linearGradient>
-				<mask id="mask1">
-					<rect x="0" y="0" width="160" height="160" fill="url(#grad)"></rect>
-				</mask>
-				<mask id="mask2">
-					<rect x="28" y="28" width="104" height="104" fill="url(#grad)"></rect>
-				</mask>
-			</defs>
-			
-			<g>
-				<g class="pl__ring-rotate">
-					<circle class="pl__ring-stroke" cx="80" cy="80" r="72" fill="none" stroke="hsl(223,90%,55%)" stroke-width="16" stroke-dasharray="452.39 452.39" stroke-dashoffset="452" stroke-linecap="round" transform="rotate(-45,80,80)"></circle>
-				</g>
-			</g>
-			<g mask="url(#mask1)">
-				<g class="pl__ring-rotate">
-					<circle class="pl__ring-stroke" cx="80" cy="80" r="72" fill="none" stroke="hsl(193,90%,55%)" stroke-width="16" stroke-dasharray="452.39 452.39" stroke-dashoffset="452" stroke-linecap="round" transform="rotate(-45,80,80)"></circle>
-				</g>
-			</g>
-			
-			<g>
-				<g stroke-width="4" stroke-dasharray="12 12" stroke-dashoffset="12" stroke-linecap="round" transform="translate(80,80)">
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(-135,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(-90,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(-45,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(0,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(45,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(90,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(135,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,10%,90%)" points="0,2 0,14" transform="rotate(180,0,0) translate(0,40)"></polyline>
-				</g>
-			</g>
-			<g mask="url(#mask1)">
-				<g stroke-width="4" stroke-dasharray="12 12" stroke-dashoffset="12" stroke-linecap="round" transform="translate(80,80)">
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(-135,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(-90,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(-45,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(0,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(45,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(90,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(135,0,0) translate(0,40)"></polyline>
-					<polyline class="pl__tick" stroke="hsl(223,90%,80%)" points="0,2 0,14" transform="rotate(180,0,0) translate(0,40)"></polyline>
-				</g>
-			</g>
-			
-			<g>
-				<g transform="translate(64,28)">
-					<g class="pl__arrows" transform="rotate(45,16,52)">
-						<path fill="hsl(3,90%,55%)" d="M17.998,1.506l13.892,43.594c.455,1.426-.56,2.899-1.998,2.899H2.108c-1.437,0-2.452-1.473-1.998-2.899L14.002,1.506c.64-2.008,3.356-2.008,3.996,0Z"></path>
-						<path fill="hsl(223,10%,90%)" d="M14.009,102.499L.109,58.889c-.453-1.421,.559-2.889,1.991-2.889H29.899c1.433,0,2.444,1.468,1.991,2.889l-13.899,43.61c-.638,2.001-3.345,2.001-3.983,0Z"></path>
-					</g>
-				</g>
-			</g>
-			<g mask="url(#mask2)">
-				<g transform="translate(64,28)">
-					<g class="pl__arrows" transform="rotate(45,16,52)">
-						<path fill="hsl(333,90%,55%)" d="M17.998,1.506l13.892,43.594c.455,1.426-.56,2.899-1.998,2.899H2.108c-1.437,0-2.452-1.473-1.998-2.899L14.002,1.506c.64-2.008,3.356-2.008,3.996,0Z"></path>
-						<path fill="hsl(223,90%,80%)" d="M14.009,102.499L.109,58.889c-.453-1.421,.559-2.889,1.991-2.889H29.899c1.433,0,2.444,1.468,1.991,2.889l-13.899,43.61c-.638,2.001-3.345,2.001-3.983,0Z"></path>
-					</g>
-				</g>
-			</g>
-		</svg>
+
+  <!-- 🌀 Loader SVG -->
+  <svg class="pl" viewBox="0 0 100 100" width="100" height="100">
+    <circle cx="50" cy="50" r="40" stroke="#007bff" stroke-width="10" fill="none" stroke-dasharray="188.5" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="rotate" dur="1s" repeatCount="indefinite" from="0 50 50" to="360 50 50"/>
+    </circle>
   </svg>
-  <!-- JavaScript remains unchanged -->
+
   <script>
     const API = '/api/tasks';
     const $ = (s, c = document) => c.querySelector(s);
@@ -197,7 +276,7 @@
       document.body.classList.add('loading');
       const delay = ms => new Promise(res => setTimeout(res, ms));
       const tasksPromise = fetch(`${API}/view?status=${currentFilter}`).then(r => r.json());
-      await Promise.all([tasksPromise, delay(300)]);
+      await Promise.all([tasksPromise, delay(3000)]); // Delay 3s
       const tasks = await tasksPromise;
       renderList(tasks);
       document.body.classList.remove('loading');
@@ -240,15 +319,9 @@
       actions.className = 'actions';
 
       if (t.deletedAt) {
-        actions.append(
-          icon('♻ Restore', () => restoreTask(t)),
-          icon('🗑 Delete', () => permanentDeleteTask(t), 'delete')
-        );
+        actions.append(icon('♻ Restore', () => restoreTask(t)), icon('🗑 Delete', () => permanentDeleteTask(t), 'delete'));
       } else {
-        actions.append(
-          icon('✏', () => editTask(li, t)),
-          icon('🗑', () => softDeleteTask(t), 'delete')
-        );
+        actions.append(icon('✏', () => editTask(li, t)), icon('🗑', () => softDeleteTask(t), 'delete'));
       }
 
       li.append(content, actions);
@@ -298,19 +371,16 @@
 
       const actions = li.querySelector('.actions');
       actions.innerHTML = '';
-      actions.append(
-        icon('💾', async () => {
-          const nt = inp.value.trim();
-          if (!nt) return alert('Task text required');
-          await fetch(`${API}/${t._id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: nt })
-          });
-          loadTasks();
-        }),
-        icon('✖', loadTasks, 'cancel')
-      );
+      actions.append(icon('💾', async () => {
+        const nt = inp.value.trim();
+        if (!nt) return alert('Task text required');
+        await fetch(`${API}/${t._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: nt })
+        });
+        loadTasks();
+      }), icon('✖', loadTasks, 'cancel'));
 
       content.innerHTML = '';
       content.appendChild(inp);
@@ -334,39 +404,33 @@
       loadTasks();
     }
 
+    function updateActiveFilter() {
+      document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+      if (currentFilter === 'completed') completedBtn.classList.add('active');
+    }
+
     filter.onchange = e => {
       currentFilter = e.target.value;
+      updateActiveFilter();
       loadTasks();
     };
 
     completedBtn.onclick = () => {
       currentFilter = 'completed';
       filter.value = 'completed';
+      updateActiveFilter();
       loadTasks().then(() => list.scrollIntoView({ behavior: 'smooth' }));
     };
 
     if (localStorage.getItem('theme') === 'dark') {
       document.body.classList.add('dark');
-      $('.ui-switch input').checked = true;
+      $('#themeToggle').checked = true;
     }
 
-    $('.ui-switch input').addEventListener('change', () => {
+    $('#themeToggle').addEventListener('change', () => {
       const isDark = document.body.classList.toggle('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
-async function loadTasks() {
-  document.body.classList.add('loading');
-
-  const delay = ms => new Promise(res => setTimeout(res, ms));
-  const tasksPromise = fetch(`${API}/view?status=${currentFilter}`).then(r => r.json());
-
-  // ⏱ Increase this delay for a longer loader animation
-  await Promise.all([tasksPromise, delay(3000)]); // 2000ms = 2 seconds
-
-  const tasks = await tasksPromise;
-  renderList(tasks);
-  document.body.classList.remove('loading');
-}
 
     loadTasks();
   </script>
